@@ -1,0 +1,111 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v3.0.json",
+  "data": [
+    {
+      "name": "source_1",
+      "url": {
+        "index": "metrics-bitbucket-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {"etb": {"avg": {"field": "elapsed_time"}}}
+        }
+      },
+      "format": {"type": "json", "property": "aggregations.etb"}
+    },
+    {
+      "name": "source_2",
+      "url": {
+        "index": "metrics-jenkins-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {"etj": {"avg": {"field": "elapsed_time"}}}
+        }
+      },
+      "format": {"type": "json", "property": "aggregations.etj"}
+    }
+  ],
+  "signals": [
+    {
+      "name": "sum",
+      "update": "(data('source_1')[0].value + data('source_2')[0].value)/3600*10"
+    }
+  ],
+  "marks": [
+    {
+      "type": "text",
+      "encode": {
+        "update": {
+          "text": {"signal": "round(sum)/10"},
+          "fontSize": {"value": 70},
+          "fontStyle": {"value": "bold"},
+          "align": {"value": "center"},
+          "x": {"signal": "width/2-150"},
+          "y": {"signal": "height/2"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "text": {"signal": "round(datum.value/3600*10)/10"},
+          "fontSize": {"value": 50},
+          "fontStyle": {"value": "bold"},
+          "align": {"value": "center"},
+          "x": {"signal": "width/2+150"},
+          "y": {"signal": "height/2-70"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2"},
+      "encode": {
+        "update": {
+          "text": {"signal": "round(datum.value/60*10)/10"},
+          "fontSize": {"value": 50},
+          "fontStyle": {"value": "bold"},
+          "align": {"value": "center"},
+          "x": {"signal": "width/2+150"},
+          "y": {"signal": "height/2+70"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "encode": {
+        "update": {
+          "text": {"value": "Lead time, hr."},
+          "x": {"signal": "width/2-190"},
+          "y": {"signal": "height/2+25"},
+          "fontSize": {"value": 14}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "encode": {
+        "update": {
+          "text": {"value": "Average code review duration, hr."},
+          "x": {"signal": "width/2+55"},
+          "y": {"signal": "height/2-45"},
+          "fontSize": {"value": 14}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "encode": {
+        "update": {
+          "text": {"value": "Average job duration, min."},
+          "x": {"signal": "width/2+70"},
+          "y": {"signal": "height/2+95"},
+          "fontSize": {"value": 14}
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,306 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v3.0.json",
+  "style": "cell",
+  "data": [
+    {
+      "name": "source",
+      "values": [
+        {"a": "AD ST", "b": 1},
+        {"a": "AT ST", "b": 2},
+        {"a": "AD IFT", "b": 3},
+        {"a": "AT IFT", "b": 4},
+        {"a": "AD PT", "b": 5},
+        {"a": "AT PT", "b": 6},
+        {"a": "AD IST", "b": 7},
+        {"a": "AT IST", "b": 8}
+      ]
+    },
+    {
+      "name": "source_0",
+      "url": {
+        "index": "metrics-jenkins-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 1000}
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      }
+    },
+    {
+      "name": "source_1",
+      "url": {
+        "index": "metrics-jenkins-*",
+        "body": {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                "%dashboard_context-must_clause%",
+                {"range": {"@timestamp": {"%timefilter%": true}}}
+              ]
+            }
+          },
+          "aggs": {
+            "name1": {
+              "terms": {"field": "squad.keyword", "size": 100},
+              "aggs": {
+                "name0": {
+                  "filters": {
+                    "filters": {
+                      "AD_ST": {
+                        "query_string": {
+                          "query": "stageName:((Deployment AND ST) OR (Post-Dep AND Test AND ST))"
+                        }
+                      },
+                      "AT_ST": {
+                        "query_string": {
+                          "query": "stageName:((Smoke AND Test AND ST) OR (Auto AND Test AND ST))"
+                        }
+                      },
+                      "AD_IFT": {
+                        "query_string": {
+                          "query": "stageName:((Deployment AND IFT) OR (Post AND Dep AND Test AND IFT))"
+                        }
+                      },
+                      "AT_IFT": {
+                        "query_string": {
+                          "query": "stageName:((Smoke AND Test AND IFT) OR (Auto AND Test AND IFT))"
+                        }
+                      },
+                      "AD_PT": {
+                        "query_string": {
+                          "query": "stageName:((Deployment AND PT) OR (Post AND Dep AND Test AND PT))"
+                        }
+                      },
+                      "AT_PT": {
+                        "query_string": {
+                          "query": "stageName:((Smoke AND Test AND PT) OR (Auto AND Test AND PT))"
+                        }
+                      },
+                      "AD_IST": {
+                        "query_string": {
+                          "query": "stageName:((Deployment AND IST) OR (Post AND Dep AND Test AND IST))"
+                        }
+                      },
+                      "AT_IST": {
+                        "query_string": {
+                          "query": "stageName:((Smoke AND Test AND IST) OR (Auto AND Test AND IST))"
+                        }
+                      }
+                    }
+                  },
+                  "aggs": {
+                    "name2": {
+                      "terms": {
+                        "field": "result.keyword",
+                        "include": ["SUCCESS", "FAILURE"],
+                        "order": {"name3": "desc"},
+                        "size": 1
+                      },
+                      "aggs": {
+                        "name3": {"max": {"field": "@timestamp"}}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.name1.buckets"
+      }
+    }
+  ],
+  "marks": [
+    {
+      "name": "AD ST",
+      "type": "symbol",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 0},
+          "size": {"value": 500},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AD_ST.doc_count > 0 ? (datum.name0.buckets.AD_ST.name2.buckets[0].key == 'SUCCESS' ? '#25E24B' : 'red') : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "name": "AT ST",
+      "type": "symbol",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 129},
+          "size": {"value": 500},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AT_ST.doc_count > 0 ? (datum.name0.buckets.AT_ST.name2.buckets[0].key == 'SUCCESS' ? '#25E24B' : 'red') : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "name": "AD IFT",
+      "type": "symbol",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 258},
+          "size": {"value": 500},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AD_IFT.doc_count > 0 ? (datum.name0.buckets.AD_IFT.name2.buckets[0].key == 'SUCCESS' ? '#25E24B' : 'red') : 'white'"
+          }
+        }
+      }
+    },    
+    {
+      "name": "AT IFT",
+      "type": "symbol",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 387},
+          "size": {"value": 500},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AT_IFT.doc_count > 0 ? (datum.name0.buckets.AT_IFT.name2.buckets[0].key == 'SUCCESS' ? '#25E24B' : 'red') : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "name": "AD PT",
+      "type": "symbol",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 516},
+          "size": {"value": 500},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AD_PT.doc_count > 0 ? (datum.name0.buckets.AD_PT.name2.buckets[0].key == 'SUCCESS' ? '#25E24B' : 'red') : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "name": "AT PT",
+      "type": "symbol",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 645},
+          "size": {"value": 500},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AT_PT.doc_count > 0 ? (datum.name0.buckets.AT_PT.name2.buckets[0].key == 'SUCCESS' ? '#25E24B' : 'red') : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "name": "AD IST",
+      "type": "symbol",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 774},
+          "size": {"value": 500},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AD_IST.doc_count > 0 ? (datum.name0.buckets.AD_IST.name2.buckets[0].key == 'SUCCESS' ? '#25E24B' : 'red') : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "name": "AT IST",
+      "type": "symbol",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 903},
+          "size": {"value": 500},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AT_IST.doc_count > 0 ? (datum.name0.buckets.AT_IST.name2.buckets[0].key == 'SUCCESS' ? '#25E24B' : 'red') : 'white'"
+          }
+        }
+      }
+    }    
+    
+    
+  ],
+  "scales": [
+    {
+      "name": "y",
+      "type": "point",
+      "domain": {
+        "data": "source_0",
+        "field": "key",
+        "sort": true
+      },
+      "range": [0, {"signal": "height"}]
+    },
+    {
+      "name": "x",
+      "type": "point",
+      "domain": {"data": "source", "field": "a", "sort": false},
+      "range": [0, 900]
+    }
+  ],
+  "signals": [
+    {"name": "width", "value": "500"},
+    {"name": "height", "value": "200"}
+  ],
+  "axes": [
+    {
+      "scale": "y",
+      "orient": "left",
+      "offset": 40,
+      "zindex": 1,
+      "encode": {
+        "labels": {
+          "update": {"fontSize": {"value": 16}, "limit": 200}
+        }
+      }
+    },
+    {
+      "scale": "x",
+      "orient": "top",
+      "offset": 40,
+      "encode": {
+        "labels": {
+          "update": {"fontSize": {"value": 16}, "limit": 200}
+        }
+      }
+    }
+  ],
+  "config": {
+    "axisY": {"minExtent": 30},
+    "style": {"cell": {"stroke": "transparent"}}
+  }
+}

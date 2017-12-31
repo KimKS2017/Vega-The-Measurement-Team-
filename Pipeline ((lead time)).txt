@@ -1,0 +1,955 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v3.0.json",
+  "style": "cell",
+  "data": [
+    {
+      "name": "source",
+      "values": [
+        {"a": "duration, min", "b": 1},
+        {"a": "AD Dev", "b": 2},
+        {"a": "AT Dev", "b": 3},
+        {"a": "AD ST", "b": 4},
+        {"a": "AT ST", "b": 5},
+        {"a": "AD IFT", "b": 6},
+        {"a": "AT IFT", "b": 7},
+        {"a": "AD PT", "b": 8},
+        {"a": "AT PT", "b": 9},
+        {"a": "AD IST", "b": 10},
+        {"a": "AT IST", "b": 11},
+        {"a": "AD UAT", "b": 12},
+        {"a": "AT UAT", "b": 13},
+        {"a": "AD PROD", "b": 14}
+      ]
+    },
+    {
+      "name": "source_0",
+      "url": {
+        "index": "metrics-jenkins-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 10000}
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      }
+    },
+    {
+      "name": "source_1",
+      "url": {
+        "index": "metrics-jenkins-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 1000},
+              "aggs": {
+                "duration_job": {
+                  "avg": {"field": "elapsed_time"}
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      }
+    },
+    {
+      "name": "source_2_1",
+      "url": {
+        "index": "metrics-jenkins-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 1000},
+              "aggs": {
+                "flt2": {
+                  "filters": {
+                    "filters": {
+                      "AD_Dev": {
+                        "query_string": {
+                          "query": "stageName: ((Deployment AND Dev) OR (Post AND Dep AND Test AND DEV))"
+                        }
+                      },
+                      "AT_Dev": {
+                        "query_string": {
+                          "query": "stageName: ((Smoke AND Test AND Dev) OR (Auto AND Test AND DEV))"
+                        }
+                      },
+                      "AD_ST": {
+                        "query_string": {
+                          "query": "stageName: ((Deployment AND ST) OR (Post AND Dep AND Test AND ST))"
+                        }
+                      },
+                      "AT_ST": {
+                        "query_string": {
+                          "query": "stageName: ((Smoke AND Test AND ST) OR (Auto AND Test AND ST))"
+                        }
+                      },
+                      "AD_IFT": {
+                        "query_string": {
+                          "query": "stageName: ((Deployment AND IFT) OR (Post AND Dep AND Test AND IFT))"
+                        }
+                      },
+                      "AT_IFT": {
+                        "query_string": {
+                          "query": "stageName: ((Smoke AND Test AND IFT) OR (Auto AND Test AND IFT))"
+                        }
+                      },
+                      "AD_PT": {
+                        "query_string": {
+                          "query": "stageName: ((Deployment AND PT) OR (Post AND Dep AND Test AND PT))"
+                        }
+                      },
+                      "AT_PT": {
+                        "query_string": {
+                          "query": "stageName: ((Smoke AND Test AND PT) OR (Auto AND Test AND PT))"
+                        }
+                      },
+                      "AD_IST": {
+                        "query_string": {
+                          "query": "stageName: ((Deployment AND IST) OR (Post AND Dep AND Test AND IST))"
+                        }
+                      },
+                      "AT_IST": {
+                        "query_string": {
+                          "query": "stageName: ((Smoke AND Test AND IST) OR (Auto AND Test AND IST))"
+                        }
+                      },
+                      "AD_UAT": {
+                        "query_string": {
+                          "query": "stageName: ((Deployment AND UAT) OR (Post AND Dep AND Test AND UAT))"
+                        }
+                      },
+                      "AT_UAT": {
+                        "query_string": {
+                          "query": "stageName: (Smoke AND Test AND UAT)"
+                        }
+                      },
+                      "AD_PROD": {
+                        "query_string": {
+                          "query": "stageName: ((Deployment AND PROD) OR (Post AND Dep AND Test AND PROD))"
+                        }
+                      }
+                    }
+                  },
+                  "aggs": {
+                    "duration_stages": {
+                      "avg": {"field": "duration"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      }
+    },
+    {
+      "name": "source_2_2",
+      "url": {
+        "index": "metrics-jenkins-*",
+        "body": {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                "%dashboard_context-must_clause%",
+                {"range": {"@timestamp": {"%timefilter%": true}}}
+              ]
+            }
+          },
+          "aggs": {
+            "name1": {
+              "terms": {"field": "squad.keyword", "size": 100},
+              "aggs": {
+                "name0": {
+                  "filters": {
+                    "filters": {
+                      "AD_Dev": {
+                        "query_string": {
+                          "query": "stageName: ((Deployment AND Dev) OR (Post AND Dep AND Test AND DEV))"
+                        }
+                      },
+                      "AT_Dev": {
+                        "query_string": {
+                          "query": "stageName: ((Smoke AND Test AND Dev) OR (Auto AND Test AND DEV))"
+                        }
+                      },
+                      "AD_ST": {
+                        "query_string": {
+                          "query": "stageName:((Deployment AND ST) OR (Post-Dep AND Test AND ST))"
+                        }
+                      },
+                      "AT_ST": {
+                        "query_string": {
+                          "query": "stageName:((Smoke AND Test AND ST) OR (Auto AND Test AND ST))"
+                        }
+                      },
+                      "AD_IFT": {
+                        "query_string": {
+                          "query": "stageName:((Deployment AND IFT) OR (Post AND Dep AND Test AND IFT))"
+                        }
+                      },
+                      "AT_IFT": {
+                        "query_string": {
+                          "query": "stageName:((Smoke AND Test AND IFT) OR (Auto AND Test AND IFT))"
+                        }
+                      },
+                      "AD_PT": {
+                        "query_string": {
+                          "query": "stageName:((Deployment AND PT) OR (Post AND Dep AND Test AND PT))"
+                        }
+                      },
+                      "AT_PT": {
+                        "query_string": {
+                          "query": "stageName:((Smoke AND Test AND PT) OR (Auto AND Test AND PT))"
+                        }
+                      },
+                      "AD_IST": {
+                        "query_string": {
+                          "query": "stageName:((Deployment AND IST) OR (Post AND Dep AND Test AND IST))"
+                        }
+                      },
+                      "AT_IST": {
+                        "query_string": {
+                          "query": "stageName:((Smoke AND Test AND IST) OR (Auto AND Test AND IST))"
+                        }
+                      },
+                      "AD_UAT": {
+                        "query_string": {
+                          "query": "stageName: ((Deployment AND UAT) OR (Post AND Dep AND Test AND UAT))"
+                        }
+                      },
+                      "AT_UAT": {
+                        "query_string": {
+                          "query": "stageName: (Smoke AND Test AND UAT)"
+                        }
+                      },
+                      "AD_PROD": {
+                        "query_string": {
+                          "query": "stageName: ((Deployment AND PROD) OR (Post AND Dep AND Test AND PROD))"
+                        }
+                      }
+                    }
+                  },
+                  "aggs": {
+                    "name2": {
+                      "terms": {
+                        "field": "result.keyword",
+                        "include": ["SUCCESS", "FAILURE"],
+                        "order": {"name3": "desc"},
+                        "size": 1
+                      },
+                      "aggs": {
+                        "name3": {"max": {"field": "@timestamp"}}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.name1.buckets"
+      }
+    }
+  ],
+  "marks": [
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 0},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "grey"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 40},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.duration_job.value/6)/10"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"value": "white"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 82},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 82},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AD_Dev.doc_count > 0 ? (datum.name0.buckets.AD_Dev.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 122},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AD_Dev.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AD_Dev.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 164},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 164},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AT_Dev.doc_count > 0 ? (datum.name0.buckets.AT_Dev.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 204},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AT_Dev.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AT_Dev.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 246},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 246},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AD_ST.doc_count > 0 ? (datum.name0.buckets.AD_ST.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 286},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AD_ST.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AD_ST.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 328},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 328},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AT_ST.doc_count > 0 ? (datum.name0.buckets.AT_ST.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 368},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AT_ST.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AT_ST.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 410},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 410},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AD_IFT.doc_count > 0 ? (datum.name0.buckets.AD_IFT.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 452},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AD_IFT.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AD_IFT.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 492},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 492},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AT_IFT.doc_count > 0 ? (datum.name0.buckets.AT_IFT.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 532},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AT_IFT.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AT_IFT.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 574},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 574},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AD_PT.doc_count > 0 ? (datum.name0.buckets.AD_PT.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 614},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AD_PT.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AD_PT.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 656},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 656},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AT_PT.doc_count > 0 ? (datum.name0.buckets.AT_PT.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 696},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AT_PT.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AT_PT.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 738},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 738},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AD_IST.doc_count > 0 ? (datum.name0.buckets.AD_IST.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 778},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AD_IST.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AD_IST.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 820},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 820},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AT_IST.doc_count > 0 ? (datum.name0.buckets.AT_IST.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 860},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AT_IST.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AT_IST.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 902},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 902},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AD_UAT.doc_count > 0 ? (datum.name0.buckets.AD_UAT.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 942},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AD_UAT.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AD_UAT.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 984},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 984},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AT_UAT.doc_count > 0 ? (datum.name0.buckets.AT_UAT.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 1024},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AT_UAT.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AT_UAT.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 1066},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {"value": "#DBDBDB"}
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 1066},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.name0.buckets.AD_PROD.doc_count > 0 && datum.name0.buckets.AD_PROD.name2.buckets.length > 0 ? (datum.name0.buckets.AD_PROD.name2.buckets[0].key == 'SUCCESS' ? 'green' : 'red') : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 1106},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.flt2.buckets.AD_PROD.duration_stages.value/600)/100"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"signal": "datum.flt2.buckets.AD_PROD.duration_stages.value > 0 ? 'white' : 0"}
+        }
+      }
+    }    
+    ],
+  "scales": [
+    {
+      "name": "y",
+      "type": "band",
+      "domain": {
+        "data": "source_0",
+        "field": "key",
+        "sort": true
+      },
+      "range": [0, {"signal": "height"}],
+      "paddingInner": 0.1,
+      "paddingOuter": 0.05
+    },
+    {
+      "name": "x",
+      "type": "point",
+      "domain": {"data": "source", "field": "a", "sort": false},
+      "range": {"step": 82},
+      "paddingOuter": 0.5
+    }
+  ],
+  "signals": [
+    {"name": "width", "value": "300"},
+    {"name": "height", "value": "200"},
+    {"name": "y_step", "update": "height/domain('y').length"}
+  ],
+  "axes": [
+    {
+      "scale": "y",
+      "orient": "left",
+      "zindex": 1,
+      "encode": {
+        "labels": {
+          "update": {"fontSize": {"value": 14}, "limit": 200}
+        }
+      }
+    },
+    {
+      "scale": "x",
+      "orient": "top",
+      "encode": {
+        "labels": {
+          "update": {"fontSize": {"value": 14}, "limit": 200}
+        }
+      }
+    }
+  ],
+  "config": {"style": {"cell": {"stroke": "transparent"}}}
+}

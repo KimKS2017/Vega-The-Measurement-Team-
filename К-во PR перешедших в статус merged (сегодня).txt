@@ -1,0 +1,73 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v3.0.json",
+  "data": [
+    {
+      "name": "source_1",
+      "url": {
+        "index": "metrics-bitbucket-*",
+        "body": {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                "%dashboard_context-must_clause%",
+                {
+                  "range": {
+                    "@timestamp": {
+                      "time_zone": "Europe/Moscow",
+                      "gte": "now/d"
+                    }
+                  }
+                },
+                {
+                  "query_string": {
+                    "query": "payload.PULL_REQUEST_ACTION:(MERGED)"
+                  }
+                }
+              ]
+            }
+          },
+          "aggs": {
+            "number": {
+              "cardinality": {
+                "field": "payload.PULL_REQUEST_UNIQ_ID.keyword"
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.number"
+      }
+    }
+  ],
+  "marks": [
+    {
+      "type": "text",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "text": {"signal": "datum.value"},
+          "fontSize": {"value": 60},
+          "fontStyle": {"value": "bold"},
+          "align": {"value": "center"},
+          "x": {"signal": "width/2"},
+          "y": {"signal": "height/2"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "encode": {
+        "update": {
+          "text": {"value": "К-во перешедших в статус merged (сегодня)"},
+          "align": {"value": "center"},
+          "x": {"signal": "width/2"},
+          "y": {"signal": "height/2+40"},
+          "fontSize": {"value": 14}
+        }
+      }
+    }
+  ]
+}

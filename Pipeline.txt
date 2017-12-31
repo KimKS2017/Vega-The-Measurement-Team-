@@ -1,0 +1,1095 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v3.0.json",
+  "style": "cell",
+  "data": [
+    {
+      "name": "source",
+      "values": [
+        {"a": "VCS", "b": 1},
+        {"a": "AB", "b": 2},
+        {"a": "UT", "b": 3},
+        {"a": "AD Dev J", "b": 4},
+        {"a": "AD Dev N", "b": 5},
+        {"a": "AT", "b": 6},
+        {"a": "AD ST", "b": 7},
+        {"a": "AT ST J", "b": 8},
+        {"a": "AT ST ALM", "b": 9},
+        {"a": "AD IFT", "b": 10},
+        {"a": "AT IFT J", "b": 11},
+        {"a": "AT IFT ALM", "b": 12},
+        {"a": "AD UAT J", "b": 13},
+        {"a": "AD UAT N", "b": 14},
+        {"a": "AT UAT", "b": 15},
+        {"a": "AD PROD", "b": 16}
+      ]
+    },
+    {
+      "comment": "test",
+      "name": "source_0",
+      "url": {
+        "index": "metrics-mappings-sbergilestruct",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 10000}
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      }
+    },
+    {
+      "name": "source_1",
+      "url": {
+        "index": "metrics-bitbucket-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 10000},
+              "aggs": {
+                "distinct_PR": {
+                  "cardinality": {
+                    "field": "payload.PULL_REQUEST_UNIQ_ID.keyword"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      },
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "indexof(domain('y'), datum.key) >= 0"
+        }
+      ]      
+    },
+    {
+      "name": "source_2",
+      "url": {
+        "index": "metrics-jenkins-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 10000},
+              "aggs": {
+                "flt": {
+                  "filters": {
+                    "filters": {
+                      "auto": {
+                        "query_string": {
+                          "query": "buildCause:((Started AND by AND timer) OR (Branch AND event) OR (Branch AND indexing) OR (Started AND SCM AND change) OR (Triggered AND change AND folder ) OR (change AND within AND response AND URL AND invocation) OR (commit AND notification) OR (ScriptTrigger)  OR (Started AND upstream AND project)) AND tags:(build)"
+                        }
+                      },
+                      "manual": {
+                        "query_string": {
+                          "query": "buildCause:(Started AND by AND user) AND tags:(build)"
+                        }
+                      },
+                      "unknown": {
+                        "query_string": {
+                          "query": "buildCause:((Rebuilds AND build) OR (Started AND remote AND host) OR (build AND with AND label AND node) OR (Legacy AND code AND started AND this AND job AND No AND cause AND information AND available) OR (Started AND from AND command AND line)) AND tags:(build)"
+                        }
+                      }
+                    }
+                  },
+                  "aggs": {
+                    "distinct_jobs": {
+                      "cardinality": {
+                        "field": "buildUrl.keyword"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      },
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "indexof(domain('y'), datum.key) >= 0"
+        }
+      ]
+    },    
+    {
+      "name": "source_3",
+      "url": {
+        "index": "metrics-sonarbeat-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 10000},
+              "aggs": {
+                "unit_test": {
+                  "avg": {"field": "Coverage.coverage"}
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      },
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "indexof(domain('y'), datum.key) >= 0"
+        }
+      ]      
+    },
+    {
+      "name": "source_4_1",
+      "url": {
+        "index": "metrics-jenkins-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 1000},
+              "aggs": {
+                "flt": {
+                  "filters": {
+                    "filters": {
+                      "auto": {
+                        "query_string": {
+                          "query": "buildCause:((Started AND by AND timer) OR (Branch AND event) OR (Branch AND indexing) OR (Started AND SCM AND change) OR (Triggered AND change AND folder ) OR (change AND within AND response AND URL AND invocation) OR (commit AND notification) OR (ScriptTrigger) OR (Started AND upstream AND project))"
+                        }
+                      },
+                      "manual": {
+                        "query_string": {
+                          "query": "buildCause:(Started AND by AND user) AND squad.keyword:(PFM AND Tips AND Broker)"
+                        }
+                      },
+                      "unknown": {
+                        "query_string": {
+                          "query": "buildCause:((Rebuilds AND build) OR (Started AND remote AND host) OR (build AND with AND label AND node) OR (Legacy AND code AND started AND this AND job AND No AND cause AND information AND available) OR (Started AND from AND command AND line))"
+                        }
+                      }
+                    }
+                  },
+                  "aggs": {
+                    "flt2": {
+                      "filters": {
+                        "filters": {
+                          "AD_Dev": {
+                            "query_string": {
+                              "query": "stageName: (Deployment AND Dev)"
+                            }
+                          },
+                          "AT_Dev": {
+                            "query_string": {
+                              "query": "stageName: ((Smoke AND Test AND Dev) OR (Auto AND Test AND DEV))"
+                            }
+                          },
+                          "AD_ST": {
+                            "query_string": {
+                              "query": "stageName: (Deployment AND ST)"
+                            }
+                          },
+                          "AT_ST": {
+                            "query_string": {
+                              "query": "stageName: ((Smoke AND Test AND ST) OR (Auto AND Test AND ST))"
+                            }
+                          },
+                          "AD_IFT": {
+                            "query_string": {
+                              "query": "stageName: (Deployment AND IFT)"
+                            }
+                          },
+                          "AT_IFT": {
+                            "query_string": {
+                              "query": "stageName: ((Smoke AND Test AND IFT) OR (Auto AND Test AND IFT))"
+                            }
+                          },
+                          "AD_UAT": {
+                            "query_string": {
+                              "query": "stageName: (Deployment AND UAT)"
+                            }
+                          },
+                          "AT_UAT": {
+                            "query_string": {
+                              "query": "stageName: (Smoke AND Test AND UAT)"
+                            }
+                          },
+                          "AD_PROM": {
+                            "query_string": {
+                              "query": "stageName: (Deployment AND PROD)"
+                            }
+                          }
+                        }
+                      },
+                      "aggs": {
+                        "distinct_jobs": {
+                          "cardinality": {
+                            "field": "buildUrl.keyword"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      },
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "indexof(domain('y'), datum.key) >= 0"
+        }
+      ]      
+    },
+    {
+      "name": "source_4_2",
+      "url": {
+        "index": "metrics-jenkinsqa-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 1000},
+              "aggs": {
+                "flt": {
+                  "filters": {
+                    "filters": {
+                      "auto": {
+                        "query_string": {
+                          "query": "buildCause:((Started AND by AND timer) OR (Branch AND event) OR (Branch AND indexing) OR (Started AND SCM AND change) OR (Triggered AND change AND folder ) OR (change AND within AND response AND URL AND invocation) OR (commit AND notification) OR (ScriptTrigger) OR (Started AND upstream AND project))"
+                        }
+                      },
+                      "manual": {
+                        "query_string": {
+                          "query": "buildCause:(Started AND by AND user) AND squad.keyword:(PFM AND Tips AND Broker)"
+                        }
+                      },
+                      "unknown": {
+                        "query_string": {
+                          "query": "buildCause:((Rebuilds AND build) OR (Started AND remote AND host) OR (build AND with AND label AND node) OR (Legacy AND code AND started AND this AND job AND No AND cause AND information AND available) OR (Started AND from AND command AND line))"
+                        }
+                      }
+                    }
+                  },
+                  "aggs": {
+                    "flt2": {
+                      "filters": {
+                        "filters": {
+                          "AD_Dev": {
+                            "query_string": {
+                              "query": "stageName: (Deployment AND Dev)"
+                            }
+                          },
+                          "AT_Dev": {
+                            "query_string": {
+                              "query": "stageName: ((Smoke AND Test AND Dev) OR (Auto AND Test AND DEV))"
+                            }
+                          },
+                          "AD_ST": {
+                            "query_string": {
+                              "query": "stageName: (Deployment AND ST)"
+                            }
+                          },
+                          "AT_ST": {
+                            "query_string": {
+                              "query": "stageName: ((Smoke AND Test AND ST) OR (Auto AND Test AND ST))"
+                            }
+                          },
+                          "AD_IFT": {
+                            "query_string": {
+                              "query": "stageName: (Deployment AND IFT)"
+                            }
+                          },
+                          "AT_IFT": {
+                            "query_string": {
+                              "query": "stageName: ((Smoke AND Test AND IFT) OR (Auto AND Test AND IFT))"
+                            }
+                          },
+                          "AD_UAT": {
+                            "query_string": {
+                              "query": "stageName: (Deployment AND UAT)"
+                            }
+                          },
+                          "AT_UAT": {
+                            "query_string": {
+                              "query": "stageName: (Smoke AND Test AND UAT)"
+                            }
+                          },
+                          "AD_PROM": {
+                            "query_string": {
+                              "query": "stageName: (Deployment AND PROD)"
+                            }
+                          }
+                        }
+                      },
+                      "aggs": {
+                        "distinct_jobs": {
+                          "cardinality": {
+                            "field": "buildUrl.keyword"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      },
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "indexof(domain('y'), datum.key) >= 0"
+        }
+      ]      
+    },
+    {
+      "name": "source_5",
+      "url": {
+        "index": "metrics-nexus-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 10000},
+              "aggs": {
+                "flt": {
+                  "filters": {
+                    "filters": {
+                      "AD_Dev": {
+                        "query_string": {"query": "type:nexus"}
+                      },
+                      "AD_UAT": {
+                        "query_string": {
+                          "query": "type:(nexus AND prom)"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      },
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "indexof(domain('y'), datum.key) >= 0"
+        }
+      ]      
+    },
+    {
+      "name": "source_6",
+      "url": {
+        "index": "metrics-hpalm-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 10000},
+              "aggs": {
+                "flt": {
+                  "filters": {
+                    "filters": {
+                      "run_ct": {
+                        "query_string": {
+                          "query": "CY_RCYC_USER_TEMPLATE_01:(СТ) AND RN_RUN_TYPE:(automated)"
+                        }
+                      },
+                      "run_ift": {
+                        "query_string": {
+                          "query": "CY_RCYC_USER_TEMPLATE_01:(ИФТ) AND RN_RUN_TYPE:(automated)"
+                        }
+                      }                      
+                    }
+                  },
+                  "aggs": {
+                    "run_count": {
+                      "cardinality": {
+                        "field": "RN_RUN_ID.keyword"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      },
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "indexof(domain('y'), datum.key) >= 0"
+        }
+      ]      
+    }
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "from": {
+        "facet": {
+          "name": "facetedDatum",
+          "data": "source_0",
+          "groupby": "key"
+        }
+      },
+      "data": [
+        {
+          "name": "facetDatumElems",
+          "source": "source",
+          "transform": [
+            {
+              "type": "formula",
+              "expr": "parent.key",
+              "as": "squad"
+            }
+          ]
+        }
+      ],
+      "marks": [
+        {
+          "type": "rect",
+          "style": [
+            "rect"
+          ],
+          "from": {
+            "data": "facetDatumElems"
+          },
+          "encode": {
+            "update": {
+              "x": {
+                "signal": "82*indexof(domain('x'), datum.a)"
+              },
+              "width": {
+                "value": 80
+              },
+              "y": {
+                "scale": "y",
+                "field": "squad"
+              },
+              "height": {
+                "scale": "y",
+                "band": true
+              },
+              "fill": {
+                "value": "red"
+              }
+            }
+          }
+        }
+      ]
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 0},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.distinct_PR.value > 0 ? 'green' : 'red'"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 40},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "datum.distinct_PR.value"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"value": "white"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 82},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.auto.distinct_jobs.value > 0 ? 'green' : (datum.flt.buckets.manual.distinct_jobs.value > 0 ? 'yellow' : 'red')"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 122},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {
+            "signal": "datum.flt.buckets.auto.distinct_jobs.value + ' / ' + datum.flt.buckets.manual.distinct_jobs.value + ' / ' + datum.flt.buckets.unknown.distinct_jobs.value"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {
+            "signal": "(datum.flt.buckets.manual.distinct_jobs.value > 0 & datum.flt.buckets.auto.distinct_jobs.value == 0) ? 'black' : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_3"},
+      "encode": {
+        "update": {
+          "x": {"value": 164},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.unit_test.value > 0 ? 'green' : 'red'"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_3"},
+      "encode": {
+        "update": {
+          "x": {"value": 204},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {"signal": "round(datum.unit_test.value) + '%'"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"value": "white"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_4_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 246},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AD_Dev.distinct_jobs.value > 0 ? 'green' : (datum.flt.buckets.manual.flt2.buckets.AD_Dev.distinct_jobs.value > 0 ? 'yellow' : 'red')"
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_5"},
+      "encode": {
+        "update": {
+          "x": {"value": 246},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.AD_Dev.doc_count > 0 ? 'green' : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_4_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 286},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AD_Dev.distinct_jobs.value + ' / ' + datum.flt.buckets.manual.flt2.buckets.AD_Dev.distinct_jobs.value + ' / ' + datum.flt.buckets.unknown.flt2.buckets.AD_Dev.distinct_jobs.value"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {
+            "signal": "(datum.flt.buckets.manual.flt2.buckets.AD_Dev.distinct_jobs.value > 0 & datum.flt.buckets.auto.flt2.buckets.AD_Dev.distinct_jobs.value == 0) ? 'black' : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_5"},
+      "encode": {
+        "update": {
+          "x": {"value": 328},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.AD_Dev.doc_count > 0 ? 'green' : 'red'"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_5"},
+      "encode": {
+        "update": {
+          "x": {"value": 368},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {
+            "signal": "datum.flt.buckets.AD_Dev.doc_count"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"value": "white"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_4_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 410},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AT_Dev.distinct_jobs.value > 0 ? 'green' : (datum.flt.buckets.manual.flt2.buckets.AT_Dev.distinct_jobs.value > 0 ? 'yellow' : 'red')"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_4_1"},
+      "encode": {
+        "update": {
+          "x": {"value": 450},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AT_Dev.distinct_jobs.value + ' / ' + datum.flt.buckets.manual.flt2.buckets.AT_Dev.distinct_jobs.value + ' / ' + datum.flt.buckets.unknown.flt2.buckets.AT_Dev.distinct_jobs.value"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {
+            "signal": "(datum.flt.buckets.manual.flt2.buckets.AT_Dev.distinct_jobs.value > 0 & datum.flt.buckets.auto.flt2.buckets.AT_Dev.distinct_jobs.value == 0) ? 'black' : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_4_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 492},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AD_ST.distinct_jobs.value > 0 ? 'green' : (datum.flt.buckets.manual.flt2.buckets.AD_ST.distinct_jobs.value > 0 ? 'yellow' : 'red')"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_4_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 532},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AD_ST.distinct_jobs.value + ' / ' + datum.flt.buckets.manual.flt2.buckets.AD_ST.distinct_jobs.value + ' / ' + datum.flt.buckets.unknown.flt2.buckets.AD_ST.distinct_jobs.value"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {
+            "signal": "(datum.flt.buckets.manual.flt2.buckets.AD_ST.distinct_jobs.value > 0 & datum.flt.buckets.auto.flt2.buckets.AD_ST.distinct_jobs.value == 0) ? 'black' : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_4_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 574},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AT_ST.distinct_jobs.value > 0 ? 'green' : (datum.flt.buckets.manual.flt2.buckets.AT_ST.distinct_jobs.value > 0 ? 'yellow' : 'red')"
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_6"},
+      "encode": {
+        "update": {
+          "x": {"value": 574},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.run_ct.run_count.value > 0 ? 'green' : 0"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_4_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 614},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AT_ST.distinct_jobs.value + ' / ' + datum.flt.buckets.manual.flt2.buckets.AT_ST.distinct_jobs.value + ' / ' + datum.flt.buckets.unknown.flt2.buckets.AT_ST.distinct_jobs.value"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {
+            "signal": "(datum.flt.buckets.manual.flt2.buckets.AT_ST.distinct_jobs.value > 0 & datum.flt.buckets.auto.flt2.buckets.AT_ST.distinct_jobs.value == 0) ? 'black' : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_6"},
+      "encode": {
+        "update": {
+          "x": {"value": 656},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.run_ct.run_count.value > 0 ? 'green' : 'red'"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_6"},
+      "encode": {
+        "update": {
+          "x": {"value": 696},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {
+            "signal": "datum.flt.buckets.run_ct.run_count.value"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"value": "white"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_4_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 738},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AD_IFT.distinct_jobs.value > 0 ? 'green' : (datum.flt.buckets.manual.flt2.buckets.AD_IFT.distinct_jobs.value > 0 ? 'yellow' : 'red')"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_4_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 778},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AD_IFT.distinct_jobs.value + ' / ' + datum.flt.buckets.manual.flt2.buckets.AD_IFT.distinct_jobs.value + ' / ' + datum.flt.buckets.unknown.flt2.buckets.AD_IFT.distinct_jobs.value"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {
+            "signal": "(datum.flt.buckets.manual.flt2.buckets.AD_IFT.distinct_jobs.value > 0 & datum.flt.buckets.auto.flt2.buckets.AD_IFT.distinct_jobs.value == 0) ? 'black' : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_4_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 820},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AT_IFT.distinct_jobs.value > 0 ? 'green' : (datum.flt.buckets.manual.flt2.buckets.AT_IFT.distinct_jobs.value > 0 ? 'yellow' : 'red')"
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_6"},
+      "encode": {
+        "update": {
+          "x": {"value": 820},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.run_ift.run_count.value > 0 ? 'green' : 0"
+          }
+        }
+      }
+    },    
+    {
+      "type": "text",
+      "from": {"data": "source_4_2"},
+      "encode": {
+        "update": {
+          "x": {"value": 860},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {
+            "signal": "datum.flt.buckets.auto.flt2.buckets.AT_IFT.distinct_jobs.value + ' / ' + datum.flt.buckets.manual.flt2.buckets.AT_IFT.distinct_jobs.value + ' / ' + datum.flt.buckets.unknown.flt2.buckets.AT_IFT.distinct_jobs.value"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {
+            "signal": "(datum.flt.buckets.manual.flt2.buckets.AT_IFT.distinct_jobs.value > 0 & datum.flt.buckets.auto.flt2.buckets.AT_IFT.distinct_jobs.value == 0) ? 'black' : 'white'"
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_6"},
+      "encode": {
+        "update": {
+          "x": {"value": 902},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.run_ift.run_count.value > 0 ? 'green' : 'red'"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_6"},
+      "encode": {
+        "update": {
+          "x": {"value": 942},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {
+            "signal": "datum.flt.buckets.run_ift.run_count.value"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"value": "white"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_5"},
+      "encode": {
+        "update": {
+          "x": {"value": 984},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.AD_UAT.doc_count > 0 ? 'green' : 0"
+          }
+        }
+      }
+    },    
+    {
+      "type": "rect",
+      "style": ["rect"],
+      "from": {"data": "source_5"},
+      "encode": {
+        "update": {
+          "x": {"value": 1066},
+          "width": {"value": 80},
+          "y": {"scale": "y", "field": "key"},
+          "height": {"scale": "y", "band": true},
+          "fill": {
+            "signal": "datum.flt.buckets.AD_UAT.doc_count > 0 ? 'green' : 'red'"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source_5"},
+      "encode": {
+        "update": {
+          "x": {"value": 1106},
+          "y": {
+            "signal": "y_step*indexof(domain('y'), datum.key) + y_step/2"
+          },
+          "text": {
+            "signal": "datum.flt.buckets.AD_UAT.doc_count"
+          },
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fill": {"value": "white"}
+        }
+      }
+    }    
+  ],
+  "scales": [
+    {
+      "name": "y",
+      "type": "band",
+      "domain": {
+        "data": "source_0",
+        "field": "key",
+        "sort": true
+      },
+      "range": [0, {"signal": "height"}],
+      "paddingInner": 0.1,
+      "paddingOuter": 0.05
+    },
+    {
+      "name": "x",
+      "type": "point",
+      "domain": {"data": "source", "field": "a", "sort": false},
+      "range": {"step": 82},
+      "paddingOuter": 0.5
+    }
+  ],
+  "signals": [
+    {"name": "width", "value": "300"},
+    {"name": "height", "value": "200"},
+    {"name": "y_step", "update": "height/domain('y').length"}
+  ],
+  "axes": [
+    {
+      "scale": "y",
+      "orient": "left",
+      "zindex": 1,
+      "encode": {
+        "labels": {
+          "update": {"fontSize": {"value": 14}, "limit": 200}
+        }
+      }
+    },
+    {
+      "scale": "x",
+      "orient": "top",
+      "ticks": false, 
+      "encode": {
+        "labels": {
+          "update": {"fontSize": {"value": 14}, "limit": 200}
+        }
+      }
+    }
+  ],
+   "config": {
+    "style": {"cell": {"stroke": "transparent"}}
+  } 
+}

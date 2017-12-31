@@ -1,0 +1,142 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v3.0.json",
+  "style": "cell",
+  "data": [
+    {
+      "name": "source",
+      "url": {
+        "index": "metrics-bitbucket-*",
+        "body": {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                "%dashboard_context-must_clause%",
+                {"range": {"@timestamp": {"%timefilter%": true}}}
+              ]
+            }
+          },
+          "aggs": {
+            "name1": {
+              "terms": {
+                "field": "payload.PULL_REQUEST_AUTHOR_DISPLAY_NAME.keyword",
+                "size": 100
+              },
+              "aggs": {
+                "flt": {
+                  "filters": {
+                    "filters": {
+                      "OPENED": {
+                        "query_string": {
+                          "query": "payload.PULL_REQUEST_ACTION:(OPENED)"
+                        }
+                      },
+                      "REVIEWED": {
+                        "query_string": {
+                          "query": "payload.PULL_REQUEST_ACTION:(REVIEWED)"
+                        }
+                      }
+                    }
+                  },
+                  "aggs": {
+                    "name3": {
+                      "cardinality": {
+                        "field": "payload.PULL_REQUEST_UNIQ_ID.keyword"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.name1.buckets"
+      }
+    }
+  ],
+  "marks": [
+    {
+      "name": "bars",
+      "type": "rect",
+      "from": {"data": "source"},
+      "encode": {
+        "update": {
+          "x": {"scale": "x", "field": "key"},
+          "width": {"scale": "x", "band": 1},
+          "y": {"scale": "y", "value": 0},
+          "y2": {
+            "scale": "y",
+            "signal": "datum.flt.buckets.OPENED.name3.value > 0 ? ((datum.flt.buckets.REVIEWED.name3.value/datum.flt.buckets.OPENED.name3.value)) : 0"
+          },
+          "fill": {"value": "#802240"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "source"},
+      "encode": {
+        "enter": {
+          "x": {"signal": "x_step*indexof(domain('x'), datum.key) + x_step/2"},
+          "y": {
+            "scale": "y",
+            "signal": "datum.flt.buckets.OPENED.name3.value > 0 ? ((datum.flt.buckets.REVIEWED.name3.value/datum.flt.buckets.OPENED.name3.value)) : 0",
+            "offset": 5
+          },
+          "fill": {"value": "white"},
+          "baseline": {"value": "top"},
+          "align": {"value": "center"},          
+          "text": { "signal": "datum.flt.buckets.OPENED.name3.value > 0 ? ((round((datum.flt.buckets.REVIEWED.name3.value/datum.flt.buckets.OPENED.name3.value)*10)/10)) : 0"}
+        }
+      }
+    }    
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "band",
+      "domain": {"data": "source", "field": "key", "sort": true},
+      "range": "width",
+      "padding": 0.1
+    },
+    {
+      "name": "y",
+      "domain": [0, 3],
+      "nice": true,
+      "range": "height"
+    }
+  ],
+  "axes": [
+    {
+      "scale": "y",
+      "orient": "left",
+      "encode": {
+        "labels": {"update": {"fontSize": {"value": 12}}}
+      }
+    },
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "encode": {
+        "labels": {
+          "update": {
+            "text": {"signal": "datum.value"},
+            "angle": {"value": 270},
+            "align": {"value": "right"},
+            "baseline": {"value": "middle"},
+            "fontSize": {"value": 12}
+          }
+        }
+      }
+    }
+  ],
+   "signals": [
+    {"name": "x_step", "update": "width/domain('x').length"}
+  ],
+    "config": {
+    "style": {"cell": {"stroke": "transparent"}}
+  }  
+}

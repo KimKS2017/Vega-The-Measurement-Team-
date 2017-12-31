@@ -1,0 +1,234 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v3.0.json",
+  "padding": 5,
+  "style": "cell",
+  "data": [
+    {
+      "name": "source_0",
+      "url": {
+        "index": "metrics-bitbucket-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "squads": {
+              "terms": {"field": "squad.keyword", "size": 100},
+              "aggs": {
+                "hist": {
+                  "date_histogram": {
+                    "field": "@timestamp",
+                    "interval": "1d",
+                    "time_zone": "Europe/Moscow",
+                    "min_doc_count": 1
+                  },
+                  "aggs": {
+                      "distinct_Job": {
+                          "cardinality": {
+                              "field": "payload.PULL_REQUEST_UNIQ_ID.keyword"
+                          }
+                      }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.squads.buckets"
+      }
+    },
+    {
+      "name": "source_1",
+      "url": {
+        "index": "metrics-bitbucket-*",
+        "%context_query%": "@timestamp",
+        "body": {
+          "size": 0,
+          "aggs": {
+            "hist": {
+              "date_histogram": {
+                "field": "@timestamp",
+                "interval": "1d",
+                "time_zone": "Europe/Moscow",
+                "min_doc_count": 1
+              }
+            }
+          }
+        }
+      },
+      "format": {
+        "type": "json",
+        "property": "aggregations.hist.buckets"
+      }
+    }
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "from": {
+        "facet": {
+          "name": "facetedDatum",
+          "data": "source_0",
+          "field": "hist.buckets"
+        }
+      },
+      "data": [
+        {
+          "name": "facetDatumElems",
+          "source": "facetedDatum",
+          "transform": [
+            {
+              "type": "formula",
+              "expr": "parent.key",
+              "as": "squad"
+            }
+          ]
+        }
+      ],
+      "marks": [
+        {
+          "name": "marks",
+          "type": "rect",
+          "style": ["rect"],
+          "from": {"data": "facetDatumElems"},
+          "encode": {
+            "update": {
+              "x": {"scale": "x", "field": "key"},
+              "width": {"scale": "x", "band": true},
+              "y": {"scale": "y", "field": "squad"},
+              "height": {"scale": "y", "band": true},
+              "fill": {"scale": "color", "field": "distinct_Job.value"}
+            },
+            "hover": {"fill": {"value": "green"}},
+            "enter": {"tooltip": {"signal": "datum.squad + '\\n' + timeFormat(datum.key, '%b %d, %H:00') + '\\n' + format(datum.distinct_Job.value, '')"}}
+          }
+        },
+        {
+          "type": "text",
+          "from": {"data": "facetDatumElems"},
+          "encode": {
+            "update": {
+              "x": {"signal": "x_step*indexof(domain('x'), datum.key) + x_step/2"},
+              "y": {"signal": "y_step*indexof(domain('y'), datum.squad) + y_step/2"},
+              "fill": {"scale": "color_number", "field": "distinct_Job.value"},
+              "align": {"value": "center"},
+              "baseline": {"value": "middle"},
+              "text": {"field": "distinct_Job.value"}
+            },
+            "hover": {"fill": {"value": "white"}},
+            "enter": {"tooltip": {"signal": "datum.squad + '\\n' + timeFormat(datum.key, '%b %d, %H:00') + '\\n' + format(datum.distinct_Job.value, '')"}}
+          }
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {"name": "width", "value": "300"},
+    {"name": "height", "value": "200"},
+    {"name": "x_step", "update": "width/domain('x').length"},
+    {"name": "y_step", "update": "height/domain('y').length"}
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "band",
+      "domain": {
+        "data": "source_1",
+        "field": "key",
+        "sort": true
+      },
+      "range": [0, {"signal": "width"}],
+      "paddingInner": 0.1,
+      "paddingOuter": 0.05
+    },
+    {
+      "name": "y",
+      "type": "band",
+      "domain": {
+        "data": "source_0",
+        "field": "key",
+        "sort": true
+      },
+      "range": [0, {"signal": "height"}],
+      "paddingInner": 0.1,
+      "paddingOuter": 0.05
+    },
+    {
+      "name": "color",
+      "type": "sequential",
+      "domain": {
+        "data": "source_0",
+        "field": "doc_count",
+        "sort": true
+      },
+      "domainMin": 0,
+      "domainMax": 20,
+      "range": "heatmap",
+      "nice": false,
+      "zero": false
+    },
+    {
+      "name": "color_number",
+      "type": "sequential",
+      "domain": {
+        "data": "source_0",
+        "field": "doc_count",
+        "sort": true
+      },
+      "domainMin": 0,
+      "domainMax": 20,
+      "range": "heatmap_numbers",
+      "reverse": true,
+      "nice": false,
+      "zero": false
+    }
+  ],
+  "axes": [
+    {
+      "scale": "x",
+      "labelOverlap": true,
+      "orient": "bottom",
+      "zindex": 1,
+      "encode": {
+        "labels": {
+          "update": {
+            "text": {
+              "signal": "timeFormat(datum.value, '%b %d, %H:00')"
+            },
+            "angle": {"value": 270},
+            "align": {"value": "right"},
+            "baseline": {"value": "middle"},
+            "fontSize": {"value": 14}
+          }
+        }
+      }
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "zindex": 1,
+      "encode": {
+        "labels": {
+          "update": {
+            "fontSize": {"value": 14},
+            "limit": 200
+          }
+        }
+      }
+    }
+  ],
+  "legends": [
+    {
+      "fill": "color",
+      "title": "PR changes count",
+      "type": "gradient"
+    }
+  ],
+  "config": {
+    "axisY": {"minExtent": 30},
+    "style": {"cell": {"stroke": "transparent"}},
+    "range": {"heatmap": {"scheme": "blues"}, "heatmap_numbers": {"scheme": "greys"}}
+  }
+}
